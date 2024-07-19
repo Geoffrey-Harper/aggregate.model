@@ -130,10 +130,10 @@ forecast_insample <- function(model, sample_share = 0.5, uncertainty_sample = 10
         tidyr::pivot_longer(x, -"time") %>%
           dplyr::summarise(max = max(.data$value),
                            min = min(.data$value),
-                           p975 = stats::quantile(.data$value, probs = 0.975),
-                           p025 = stats::quantile(.data$value, probs = 0.025),
-                           p75 = stats::quantile(.data$value, probs = 0.75),
-                           p25 = stats::quantile(.data$value, probs = 0.25), .by = .data$time) %>%
+                           p975 = stats::quantile(.data$value, probs = 0.975,na.rm=TRUE),
+                           p025 = stats::quantile(.data$value, probs = 0.025,na.rm=TRUE),
+                           p75 = stats::quantile(.data$value, probs = 0.75,na.rm=TRUE),
+                           p25 = stats::quantile(.data$value, probs = 0.25,na.rm=TRUE), .by = .data$time) %>%
           tidyr::pivot_longer(-"time", names_to = "quantile")
       })) %>%
       dplyr::select(-"all.estimates") %>%

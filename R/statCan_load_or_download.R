@@ -38,7 +38,6 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
     #get the dictionary coordinates that use the following dataset_id
     indices <- which(to_obtain$database == "statcan" & to_obtain$dataset_id == id)
 
-    #browser();
     #look through the rows of the dictionary based on the coordinates for the id
     for (idx in indices) {
       subset_of_data <- df
@@ -50,7 +49,20 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
         # print(names(subset_of_data))
         if (filtername %in% names(subset_of_data)) {
 
-          subset_of_data <- subset_of_data %>% dplyr::filter(.,.[[filtername]] == as.name(to_obtain[idx,filtername]))
+          filter_value <- as.character(to_obtain[idx, filtername])
+          #subset_of_data <- subset_of_data %>% dplyr::filter(.,.[[filtername]] == as.name(to_obtain[idx,filtername]))
+
+          if (grepl("/|:|\\?|<|>|\\|\\\\|\\*|\\$",filter_value,perl = TRUE)){
+            print("REGEX PATTERN FOUND")
+            subset_of_data <- subset_of_data %>% dplyr::filter(.,stringr::str_detect(.[[filtername]],filter_value))
+
+          }
+          else{
+
+            subset_of_data <- subset_of_data %>% dplyr::filter(.,.[[filtername]] == as.name(to_obtain[idx,filtername]))
+
+          }
+
           #print(head(subset_of_data,2))
         }
       }
@@ -121,6 +133,7 @@ download_statcan <- function(to_obtain, column_filters, quiet) {
       #drop columns that we will not be using
       subset_of_data <- subset_of_data %>% dplyr::select(.,-c(cols_to_remove))
 
+      #browser()
 
       df_statcan <- dplyr::bind_rows(df_statcan, subset_of_data)
       #write.csv(df_statcan, "/Users/geoffreyharper/Desktop/statcan_data.csv", row.names=FALSE)
