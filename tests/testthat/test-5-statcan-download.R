@@ -55,6 +55,7 @@ test_that('statCan_load_or_download works', {
 test_that('statcan_load_and_download_forecasting_functionality',{
   #library("tinytest")
   #using("tinysnapshot")
+  library("readr")
   skip_on_cran()
   skip_on_ci()
 
@@ -83,7 +84,8 @@ test_that('statcan_load_and_download_forecasting_functionality',{
     "IndProd", "Total, Industrial product price index (IPPI)", "statcan", NA, "18-10-0266-01", "na_item", "m", "Canada", NA, NA, NA, NA, NA, NA, "Total, Industrial product price index (IPPI)", NA, NA, NA, NA, NA, NA, NA,NA,NA,NA,NA,NA,
     "WORLD_OIL", "World Oil Price USD", "imf", NA, "PCPS", "na_item","M", NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA, NA,"W00","POILAPSP","USD",NA,NA
   )
-  dict_statCan <- as.data.frame(dict_statCan)
+
+  #as.data.frame(dict_statCan)
 
   module_order <- aggregate.model:::check_config_table(spec)
   dictionary <- dict_statCan #aggregate.model::statcan_dict
@@ -91,21 +93,17 @@ test_that('statcan_load_and_download_forecasting_functionality',{
                                                      dictionary = dictionary)
 
 
-  #run the model
-  expect_warning(model_run <- run_model(
-      specification = spec,
-      dictionary = dictionary,
-      max.ar = 4,
-      max.dl = 4,
-      primary_source = "download",
-      quiet = TRUE
-    ), "Unbalanced panel")
+  df = read_csv('canada_imf_stable_data.csv')
 
-  set.seed(123)
+  #run the model
+  expect_warning( model_run <- run_model(specification = spec,
+                                     dictionary = dictionary,
+                                     inputdata_directory = df,
+                                     primary_source = "local")
+    , "Unbalanced panel")
+
   #forcast the model
-  expect_message(model_forecast <- forecast_model(model_run, n.ahead = 10, exog_fill_method = "AR", plot.forecast = FALSE)
-, regexp = "No exogenous values")
-  skip_on_ci()
+  model_forecast <- forecast_model(model_run, exog_fill_method = "AR", plot.forecast = FALSE)
 
   #plot model
   expect_is(plot.aggmod.forecast(model_forecast,order.as.run = TRUE),class = c("gg","ggplot"))

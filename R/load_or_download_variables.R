@@ -173,9 +173,6 @@ load_or_download_variables <- function(specification,
       full <- dplyr::bind_rows(full, step4$df)
     }
 
-
-
-
     if (any(to_obtain$found == FALSE)) {
       stop(paste0("The following variables could not be obtained: ",
                   paste(to_obtain %>% dplyr::filter(.data$found == FALSE) %>% dplyr::pull(.data$model_varname), collapse = ", ")))
